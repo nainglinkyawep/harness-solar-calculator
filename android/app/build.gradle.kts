@@ -51,17 +51,17 @@ val keystoreProps: Properties? = loadKeystoreProperties()
 
 android {
     namespace = "com.harnessengineering.hesolardesignsuite"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = keystoreProps?.getProperty("applicationId")
             ?.takeIf { it.isNotBlank() }
             ?: "com.harnessengineering.hesolardesignsuite"
         minSdk = 24
-        targetSdk = 34
-        // Play last published versionCode was 1645; this release is 1646.
-        versionCode = keystoreProps?.getProperty("versionCode")?.toIntOrNull() ?: 1646
-        versionName = keystoreProps?.getProperty("versionName")?.takeIf { it.isNotBlank() } ?: "1.10.0"
+        targetSdk = 36
+        // Play rejected 1646 for targetSdk 34; this build targets API 36 as versionCode 1647.
+        versionCode = keystoreProps?.getProperty("versionCode")?.toIntOrNull() ?: 1647
+        versionName = keystoreProps?.getProperty("versionName")?.takeIf { it.isNotBlank() } ?: "1.10.1"
     }
 
     signingConfigs {
