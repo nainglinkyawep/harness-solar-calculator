@@ -8,7 +8,7 @@ Play / app identity:
 
 - Launcher / display name: `Harness Engineering`
 - Package / applicationId (unchanged for Play continuity): `com.harnessengineering.hesolardesignsuite`
-- Version in this tree: `1.10.0` (`versionCode` 200)
+- Version in this tree: `1.10.0` (`versionCode` 1646)
 
 The WordPress / WooCommerce site itself is **not** in this repository. This project only ships the Android shell that loads and navigates the live site.
 
@@ -30,8 +30,6 @@ Requirements: JDK 17+, Android SDK 34.
 cd android
 # optional: echo "sdk.dir=$HOME/android-sdk" > local.properties
 ./gradlew assembleDebug
-# release (unsigned unless you configure signing):
-./gradlew assembleRelease
 ```
 
 Debug APK:
@@ -40,26 +38,36 @@ Debug APK:
 
 (Debug builds use applicationId `com.harnessengineering.hesolardesignsuite.debug` so they can sit beside the Play Store install.)
 
-Release APK (for Play upload after signing):
+## Signing / Play upload (release AAB)
 
-`app/build/outputs/apk/release/app-release-unsigned.apk`
+Signing keys are **not** in this repo. Do not commit `*.jks`, `*.keystore`, or `keystore.properties`.
 
-## Signing / Play upload
+Create a local `keystore.properties` (or point to one) with:
 
-Signing keys are **not** in this repo. Configure `signingConfigs` in `app/build.gradle.kts` (or Play App Signing) before uploading a release AAB/APK.
+```properties
+storeFile=/absolute/path/to/he-upload-key.jks
+storePassword=********
+keyAlias=hesolar
+keyPassword=********
+applicationId=com.harnessengineering.hesolardesignsuite
+versionCode=1646
+```
 
-Suggested release command once a keystore is available:
+Supply that file via any one of:
+
+1. `export HE_KEYSTORE_PROPERTIES=/absolute/path/to/keystore.properties`
+2. `./gradlew bundleRelease -Phe.keystore.properties=/absolute/path/to/keystore.properties`
+3. In `local.properties`: `he.keystore.properties=/absolute/path/to/keystore.properties`
+4. Copy/symlink as `android/keystore.properties` (gitignored)
+
+Then:
 
 ```bash
 ./gradlew bundleRelease
+# AAB: app/build/outputs/bundle/release/app-release.aab
+
+./gradlew assembleRelease
+# APK: app/build/outputs/apk/release/app-release.apk
 ```
 
-## Test checklist
-
-1. Install debug APK on a device/emulator (API 24+).
-2. Confirm home loads `training.harnessengineering.com`.
-3. Navigate shop, courses, and suite pages without leaving the app.
-4. Tap an external link → opens browser.
-5. Press system back → previous in-site page.
-6. Airplane mode → error panel + Retry.
-7. Trigger a file download if the site offers one.
+Upload the signed AAB to Google Play Console (Play App Signing).
