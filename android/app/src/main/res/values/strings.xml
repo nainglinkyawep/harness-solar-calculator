@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">HE Solar Design Suite</string>
+    <string name="app_name">Harness Engineering</string>
     <string name="loading">Loading…</string>
     <string name="error_title">Couldn’t load the site</string>
     <string name="error_message">Check your internet connection, then try again.</string>

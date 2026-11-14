@@ -1,13 +1,13 @@
-# HE Solar Design Suite (Android)
+# Harness Engineering (Android)
 
 Mobile WebView wrapper for the full Harness Engineering training site:
 
 **https://training.harnessengineering.com/**
 
-Play Store identity (unchanged):
+Play / app identity:
 
-- App name: `HE Solar Design Suite`
-- Package / applicationId: `com.harnessengineering.hesolardesignsuite`
+- Launcher / display name: `Harness Engineering`
+- Package / applicationId (unchanged for Play continuity): `com.harnessengineering.hesolardesignsuite`
 - Version in this tree: `1.10.0` (`versionCode` 200)
 
 The WordPress / WooCommerce site itself is **not** in this repository. This project only ships the Android shell that loads and navigates the live site.

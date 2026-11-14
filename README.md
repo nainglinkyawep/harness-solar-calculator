@@ -2,7 +2,7 @@
 
 This repository now includes:
 
-1. **Android APK wrapper** (`android/`) — Play Store app **HE Solar Design Suite** (`com.harnessengineering.hesolardesignsuite`) that loads the full site **https://training.harnessengineering.com** in a mobile WebView.
+1. **Android APK wrapper** (`android/`) — launcher name **Harness Engineering** (package `com.harnessengineering.hesolardesignsuite`) that loads the full site **https://training.harnessengineering.com** in a mobile WebView.
 2. Placeholder HTML (`index.html`) pointing at related calculator artifacts.
 
 ## Android app (primary deliverable)
