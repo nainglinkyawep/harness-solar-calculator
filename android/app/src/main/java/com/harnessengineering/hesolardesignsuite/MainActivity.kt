@@ -30,6 +30,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.webkit.WebViewAssetLoader
 import com.harnessengineering.hesolardesignsuite.databinding.ActivityMainBinding
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -170,10 +171,9 @@ class MainActivity : AppCompatActivity() {
                 currentUrl = url ?: currentUrl
                 showLoading(false)
                 binding.swipeRefresh.isRefreshing = false
-                // Nudge responsive CSS / viewport if a page forgot mobile meta.
+                // Viewport + full mobile layout / Myanmar font inject (APK-side CSS).
                 view?.evaluateJavascript(MOBILE_VIEWPORT_JS, null)
-                // Fix Myanmar (Unicode) glyph shaping in WebView — site fonts lack Myanmar.
-                view?.evaluateJavascript(MYANMAR_FONT_FIX_JS, null)
+                applyMobileLayoutFix(view)
             }
 
             override fun onReceivedError(
@@ -377,81 +377,105 @@ class MainActivity : AppCompatActivity() {
             })();
         """
 
-        /**
-         * Site motto/cards are Unicode Myanmar but styled with Latin display fonts
-         * (Instrument Sans / Space Grotesk) plus layered 3D text-shadow + 3D transform,
-         * which makes stacked marks look overlapping in Android WebView.
-         * Serve bundled Noto Sans Myanmar via WebViewAssetLoader and neutralize harmful CSS.
-         */
-        private const val MYANMAR_FONT_FIX_JS = """
+        // CSS is injected inline from assets at runtime (see applyMobileLayoutFix).
+    }
+
+    private fun applyMobileLayoutFix(view: WebView?) {
+        if (view == null) return
+        val css = runCatching {
+            assets.open("he-mobile-fix.css").bufferedReader().use { it.readText() }
+        }.getOrElse { return }
+
+        val escaped = JSONObject.quote(css)
+        val js = """
             (function() {
               try {
-                if (window.__heMyanmarFontFixApplied) return;
-                window.__heMyanmarFontFixApplied = true;
-
+                if (window.__heMobileLayoutFixApplied) return;
+                window.__heMobileLayoutFixApplied = true;
                 var head = document.head || document.getElementsByTagName('head')[0];
                 if (!head) return;
-
                 var charset = document.querySelector('meta[charset]');
                 if (!charset) {
                   charset = document.createElement('meta');
                   charset.setAttribute('charset', 'UTF-8');
                   head.insertBefore(charset, head.firstChild);
                 }
-
-                if (!document.getElementById('he-myanmar-font-fix')) {
-                  var style = document.createElement('style');
-                  style.id = 'he-myanmar-font-fix';
-                  style.textContent = [
-                    '@font-face {',
-                    '  font-family: "HE Myanmar";',
-                    '  src: url("https://appassets.androidplatform.net/assets/fonts/NotoSansMyanmar-Regular.ttf") format("truetype");',
-                    '  font-weight: 400;',
-                    '  font-style: normal;',
-                    '  font-display: swap;',
-                    '}',
-                    '@font-face {',
-                    '  font-family: "HE Myanmar";',
-                    '  src: url("https://appassets.androidplatform.net/assets/fonts/NotoSansMyanmar-Bold.ttf") format("truetype");',
-                    '  font-weight: 600 700;',
-                    '  font-style: normal;',
-                    '  font-display: swap;',
-                    '}',
-                    'html, body, .he-hub, .he-hub * {',
-                    '  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;',
-                    '  letter-spacing: normal !important;',
-                    '  word-spacing: normal !important;',
-                    '}',
-                    '.he-hub .motto, p.motto, .motto {',
-                    '  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;',
-                    '  font-weight: 600 !important;',
-                    '  font-feature-settings: normal !important;',
-                    '  font-variant-ligatures: normal !important;',
-                    '  letter-spacing: 0 !important;',
-                    '  word-spacing: normal !important;',
-                    '  line-height: 1.75 !important;',
-                    '  white-space: normal !important;',
-                    '  text-shadow: none !important;',
-                    '  transform: none !important;',
-                    '  animation: none !important;',
-                    '  max-width: 100% !important;',
-                    '  padding-left: 12px !important;',
-                    '  padding-right: 12px !important;',
-                    '  overflow-wrap: anywhere !important;',
-                    '  word-break: normal !important;',
-                    '  text-rendering: optimizeLegibility !important;',
-                    '}',
-                    '.he-hub .mm, .mm, [lang="my"], [lang="my-MM"] {',
-                    '  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;',
-                    '  letter-spacing: 0 !important;',
-                    '  line-height: 1.55 !important;',
-                    '  text-shadow: none !important;',
-                    '}'
-                  ].join('\\n');
+                var style = document.getElementById('he-mobile-layout-fix');
+                if (!style) {
+                  style = document.createElement('style');
+                  style.id = 'he-mobile-layout-fix';
                   head.appendChild(style);
                 }
+                style.textContent = $escaped;
+                var hub = document.querySelector('.he-hub');
+                if (hub) {
+                  var node = hub.parentElement;
+                  while (node && node !== document.body) {
+                    try {
+                      node.style.setProperty('max-width', 'none', 'important');
+                      node.style.setProperty('width', '100%', 'important');
+                      node.style.setProperty('padding-left', '0', 'important');
+                      node.style.setProperty('padding-right', '0', 'important');
+                    } catch (e1) {}
+                    node = node.parentElement;
+                  }
+                  document.documentElement.style.setProperty('overflow-x', 'hidden', 'important');
+                  document.body.style.setProperty('overflow-x', 'hidden', 'important');
+                }
+                // Direct inline overrides beat site <style> for the worst offenders.
+                var setImp = function(el, prop, val) {
+                  if (el) el.style.setProperty(prop, val, 'important');
+                };
+                document.querySelectorAll('.he-hub .motto, p.motto').forEach(function(el) {
+                  setImp(el, 'font-family', '"HE Myanmar","Noto Sans Myanmar","Pyidaungsu","Myanmar Text",sans-serif');
+                  setImp(el, 'font-weight', '400');
+                  setImp(el, 'font-size', '15px');
+                  setImp(el, 'line-height', '1.85');
+                  setImp(el, 'letter-spacing', '0');
+                  setImp(el, 'white-space', 'normal');
+                  setImp(el, 'text-shadow', 'none');
+                  setImp(el, 'transform', 'none');
+                  setImp(el, 'animation', 'none');
+                  setImp(el, 'filter', 'none');
+                  setImp(el, 'max-width', '100%');
+                  setImp(el, 'display', 'block');
+                  setImp(el, 'text-align', 'center');
+                  setImp(el, 'margin', '14px 0 16px');
+                  setImp(el, 'padding', '0 8px');
+                  setImp(el, 'overflow-wrap', 'break-word');
+                });
+                document.querySelectorAll('.he-hub .logo').forEach(function(el) {
+                  setImp(el, 'transform', 'none');
+                  setImp(el, 'animation', 'none');
+                  setImp(el, 'width', 'min(220px, 68%)');
+                  setImp(el, 'margin', '0 auto 18px');
+                });
+                document.querySelectorAll('.he-hub .card, .he-hub .mark, .he-hub .grid').forEach(function(el) {
+                  setImp(el, 'transform', 'none');
+                  setImp(el, 'animation', 'none');
+                  setImp(el, 'perspective', 'none');
+                });
+                document.querySelectorAll('.he-hub .tools').forEach(function(el) {
+                  setImp(el, 'display', 'flex');
+                  setImp(el, 'flex-direction', 'column');
+                  setImp(el, 'align-items', 'stretch');
+                  setImp(el, 'gap', '10px');
+                  setImp(el, 'width', '100%');
+                });
+                document.querySelectorAll('.he-hub main').forEach(function(el) {
+                  setImp(el, 'width', '100%');
+                  setImp(el, 'max-width', '100%');
+                  setImp(el, 'padding', '6px 14px 110px');
+                  setImp(el, 'box-sizing', 'border-box');
+                });
+                document.querySelectorAll('.he-hub .grid').forEach(function(el) {
+                  setImp(el, 'grid-template-columns', 'repeat(2, minmax(0, 1fr))');
+                  setImp(el, 'gap', '12px');
+                  setImp(el, 'margin-top', '18px');
+                });
               } catch (e) {}
             })();
-        """
+        """.trimIndent()
+        view.evaluateJavascript(js, null)
     }
 }

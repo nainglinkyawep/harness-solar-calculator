@@ -1,0 +1,242 @@
+/* Harness Engineering WebView — mobile layout + Myanmar Unicode font fix.
+   Injected by MainActivity; also served via WebViewAssetLoader. */
+
+@font-face {
+  font-family: "HE Myanmar";
+  src: url("https://appassets.androidplatform.net/assets/fonts/NotoSansMyanmar-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "HE Myanmar";
+  src: url("https://appassets.androidplatform.net/assets/fonts/NotoSansMyanmar-Bold.ttf") format("truetype");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Undo WP block theme constrained width / global padding that leaves side gutters */
+.entry-content:has(.he-hub),
+.wp-block-post-content:has(.he-hub),
+.entry-content:has(.he-hub).is-layout-constrained,
+.wp-block-post-content:has(.he-hub).is-layout-constrained,
+.entry-content:has(.he-hub).has-global-padding,
+.wp-block-post-content:has(.he-hub).has-global-padding {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+.entry-content:has(.he-hub) > *,
+.wp-block-post-content:has(.he-hub) > * {
+  max-width: none !important;
+}
+.wp-site-blocks,
+.wp-block-group:has(.he-hub),
+main.wp-block-group:has(.he-hub) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.wp-block-group:empty {
+  display: none !important;
+}
+
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  -webkit-text-size-adjust: 100% !important;
+}
+
+/* Kill 3D perspective that skews cards/logo/motto on phone WebView */
+.he-hub,
+.he-hub main,
+.he-hub .grid,
+.he-hub .card {
+  perspective: none !important;
+  transform-style: flat !important;
+}
+
+.he-hub {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", "Segoe UI", sans-serif !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+}
+
+.he-hub *,
+.he-hub .name,
+.he-hub .mm,
+.he-hub .motto,
+.he-hub input,
+.he-hub button,
+.he-hub a {
+  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", "Segoe UI", sans-serif !important;
+  letter-spacing: normal !important;
+}
+
+.he-hub .homebtn {
+  margin: 10px 14px 0 !important;
+  height: 40px !important;
+}
+
+.he-hub main {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 6px 14px 110px !important; /* bottom room for cookie bar */
+  box-sizing: border-box !important;
+}
+
+/* Motto: readable wrap, no 3D shadow stacking */
+.he-hub .motto,
+p.motto,
+.motto {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 12px 0 14px !important;
+  padding: 0 4px !important;
+  text-align: center !important;
+  color: #146b32 !important;
+  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1.75 !important;
+  white-space: normal !important;
+  letter-spacing: 0 !important;
+  word-spacing: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+.he-hub .logo {
+  display: block !important;
+  width: min(220px, 68%) !important;
+  height: auto !important;
+  margin: 0 auto 18px !important;
+  padding: 12px 14px !important;
+  border-radius: 22px !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* Search + Contact/Business stack cleanly on narrow screens */
+.he-hub .tools {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+.he-hub .searchrow {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.he-hub .search,
+.he-hub .searchrow .search {
+  width: 100% !important;
+  flex: 1 1 auto !important;
+}
+.he-hub input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  font-size: 15px !important;
+  min-height: 44px !important;
+}
+.he-hub .toplinks {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+.he-hub .toplink,
+.he-hub .contactlink {
+  flex: 1 1 auto !important;
+  justify-content: center !important;
+  min-width: 120px !important;
+  max-width: 48% !important;
+}
+
+/* 2-column card grid, flat (no rotateX) */
+.he-hub .grid {
+  list-style: none !important;
+  margin: 18px 0 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  perspective: none !important;
+}
+.he-hub .card {
+  min-height: 118px !important;
+  padding: 14px !important;
+  border-radius: 16px !important;
+  transform: none !important;
+  animation: none !important;
+  box-sizing: border-box !important;
+}
+.he-hub .card:hover,
+.he-hub .card:active {
+  transform: none !important;
+}
+.he-hub .name {
+  display: block !important;
+  margin-top: 12px !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.35 !important;
+}
+.he-hub .mm {
+  display: block !important;
+  margin-top: 4px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+.he-hub .filters,
+.he-hub .finder {
+  width: 100% !important;
+}
+.he-hub .mark {
+  transform: none !important;
+  animation: none !important;
+}
+
+/* Cookie / fixed footers shouldn't cover the last cards forever */
+body .cky-consent-container,
+body .cky-consent-bar,
+body [class*="cookie"] {
+  max-width: 100vw !important;
+}
+
+
+/* motto-strong */
+.he-hub p.motto,
+.he-hub > main > p.motto,
+div.he-hub p.motto {
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+  filter: none !important;
+  transform: none !important;
+  animation: none !important;
+  white-space: normal !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1.8 !important;
+  margin: 14px 0 16px !important;
+}
