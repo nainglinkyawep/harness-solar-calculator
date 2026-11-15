@@ -16,6 +16,7 @@ import android.webkit.URLUtil
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -27,11 +28,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.webkit.WebViewAssetLoader
 import com.harnessengineering.hesolardesignsuite.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var assetLoader: WebViewAssetLoader
     private var lastFailedUrl: String? = null
     private var currentUrl: String = HOME_URL
 
@@ -41,6 +44,10 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        assetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
 
         applySafeAreaInsets()
         setupWebView()
@@ -121,6 +128,7 @@ class MainActivity : AppCompatActivity() {
             setSupportMultipleWindows(false)
             allowFileAccess = false
             allowContentAccess = true
+            defaultTextEncodingName = "UTF-8"
             // Prefer mobile layout from responsive sites.
             userAgentString = userAgentString.replace("; wv", "")
         }
@@ -131,6 +139,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupChromeClients() {
         binding.webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                return assetLoader.shouldInterceptRequest(request.url)
+                    ?: super.shouldInterceptRequest(view, request)
+            }
+
             override fun shouldOverrideUrlLoading(
                 view: WebView,
                 request: WebResourceRequest
@@ -156,6 +172,8 @@ class MainActivity : AppCompatActivity() {
                 binding.swipeRefresh.isRefreshing = false
                 // Nudge responsive CSS / viewport if a page forgot mobile meta.
                 view?.evaluateJavascript(MOBILE_VIEWPORT_JS, null)
+                // Fix Myanmar (Unicode) glyph shaping in WebView — site fonts lack Myanmar.
+                view?.evaluateJavascript(MYANMAR_FONT_FIX_JS, null)
             }
 
             override fun onReceivedError(
@@ -355,6 +373,83 @@ class MainActivity : AppCompatActivity() {
                 }
                 document.documentElement.style.webkitTextSizeAdjust = '100%';
                 document.documentElement.style.touchAction = 'manipulation';
+              } catch (e) {}
+            })();
+        """
+
+        /**
+         * Site motto/cards are Unicode Myanmar but styled with Latin display fonts
+         * (Instrument Sans / Space Grotesk) plus layered 3D text-shadow + 3D transform,
+         * which makes stacked marks look overlapping in Android WebView.
+         * Serve bundled Noto Sans Myanmar via WebViewAssetLoader and neutralize harmful CSS.
+         */
+        private const val MYANMAR_FONT_FIX_JS = """
+            (function() {
+              try {
+                if (window.__heMyanmarFontFixApplied) return;
+                window.__heMyanmarFontFixApplied = true;
+
+                var head = document.head || document.getElementsByTagName('head')[0];
+                if (!head) return;
+
+                var charset = document.querySelector('meta[charset]');
+                if (!charset) {
+                  charset = document.createElement('meta');
+                  charset.setAttribute('charset', 'UTF-8');
+                  head.insertBefore(charset, head.firstChild);
+                }
+
+                if (!document.getElementById('he-myanmar-font-fix')) {
+                  var style = document.createElement('style');
+                  style.id = 'he-myanmar-font-fix';
+                  style.textContent = [
+                    '@font-face {',
+                    '  font-family: "HE Myanmar";',
+                    '  src: url("https://appassets.androidplatform.net/assets/fonts/NotoSansMyanmar-Regular.ttf") format("truetype");',
+                    '  font-weight: 400;',
+                    '  font-style: normal;',
+                    '  font-display: swap;',
+                    '}',
+                    '@font-face {',
+                    '  font-family: "HE Myanmar";',
+                    '  src: url("https://appassets.androidplatform.net/assets/fonts/NotoSansMyanmar-Bold.ttf") format("truetype");',
+                    '  font-weight: 600 700;',
+                    '  font-style: normal;',
+                    '  font-display: swap;',
+                    '}',
+                    'html, body, .he-hub, .he-hub * {',
+                    '  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;',
+                    '  letter-spacing: normal !important;',
+                    '  word-spacing: normal !important;',
+                    '}',
+                    '.he-hub .motto, p.motto, .motto {',
+                    '  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;',
+                    '  font-weight: 600 !important;',
+                    '  font-feature-settings: normal !important;',
+                    '  font-variant-ligatures: normal !important;',
+                    '  letter-spacing: 0 !important;',
+                    '  word-spacing: normal !important;',
+                    '  line-height: 1.75 !important;',
+                    '  white-space: normal !important;',
+                    '  text-shadow: none !important;',
+                    '  transform: none !important;',
+                    '  animation: none !important;',
+                    '  max-width: 100% !important;',
+                    '  padding-left: 12px !important;',
+                    '  padding-right: 12px !important;',
+                    '  overflow-wrap: anywhere !important;',
+                    '  word-break: normal !important;',
+                    '  text-rendering: optimizeLegibility !important;',
+                    '}',
+                    '.he-hub .mm, .mm, [lang="my"], [lang="my-MM"] {',
+                    '  font-family: "HE Myanmar", "Noto Sans Myanmar", "Pyidaungsu", "Myanmar Text", sans-serif !important;',
+                    '  letter-spacing: 0 !important;',
+                    '  line-height: 1.55 !important;',
+                    '  text-shadow: none !important;',
+                    '}'
+                  ].join('\\n');
+                  head.appendChild(style);
+                }
               } catch (e) {}
             })();
         """

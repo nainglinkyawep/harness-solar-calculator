@@ -21,6 +21,7 @@ The WordPress / WooCommerce site itself is **not** in this repository. This proj
 - Safe-area / system-bar padding, swipe-to-refresh, loading bar, offline/error retry
 - File downloads via `DownloadManager`
 - Optional deep links to `https://training.harnessengineering.com/...`
+- Myanmar (Burmese) Unicode font fix in WebView: injects Noto Sans Myanmar and disables the site motto’s 3D text-shadow / Latin display font that stacked glyphs incorrectly
 
 ## Build
 
