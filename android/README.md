@@ -8,7 +8,7 @@ Play / app identity:
 
 - Launcher / display name: `Harness Engineering`
 - Package / applicationId (unchanged for Play continuity): `com.harnessengineering.hesolardesignsuite`
-- Version in this tree: `1.10.1` (`versionCode` 1647, `targetSdk` 36)
+- Version in this tree: `1.10.2` (`versionCode` 1648, `targetSdk` 36)
 
 The WordPress / WooCommerce site itself is **not** in this repository. This project only ships the Android shell that loads and navigates the live site.
 
@@ -51,8 +51,8 @@ storePassword=********
 keyAlias=hesolar
 keyPassword=********
 applicationId=com.harnessengineering.hesolardesignsuite
-versionCode=1647
-versionName=1.10.1
+versionCode=1648
+versionName=1.10.2
 ```
 
 Supply that file via any one of:

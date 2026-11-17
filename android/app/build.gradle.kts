@@ -59,9 +59,9 @@ android {
             ?: "com.harnessengineering.hesolardesignsuite"
         minSdk = 24
         targetSdk = 36
-        // Play rejected 1646 for targetSdk 34; this build targets API 36 as versionCode 1647.
-        versionCode = keystoreProps?.getProperty("versionCode")?.toIntOrNull() ?: 1647
-        versionName = keystoreProps?.getProperty("versionName")?.takeIf { it.isNotBlank() } ?: "1.10.1"
+        // Play rejected 1646 for targetSdk 34; production track currently needs API 36+.
+        versionCode = keystoreProps?.getProperty("versionCode")?.toIntOrNull() ?: 1648
+        versionName = keystoreProps?.getProperty("versionName")?.takeIf { it.isNotBlank() } ?: "1.10.2"
     }
 
     signingConfigs {
