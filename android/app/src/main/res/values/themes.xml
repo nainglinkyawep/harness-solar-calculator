@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.HESolarDesignSuite" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/he_forest</item>
+        <item name="colorPrimaryVariant">@color/he_forest</item>
+        <item name="colorSecondary">@color/he_lime</item>
+        <item name="android:statusBarColor">@color/he_forest</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowBackground">@color/he_bg</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

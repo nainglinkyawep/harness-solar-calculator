@@ -1,18 +1,26 @@
-# Harness Engineering – Solar Calculator
+# Harness Engineering – Solar Calculator / HE Solar Design Suite
 
-Standalone HTML Solar Calculator for Myanmar (Harness Engineering).
+This repository now includes:
 
-## How to use
+1. **Android APK wrapper** (`android/`) — launcher name **Harness Engineering** (package `com.harnessengineering.hesolardesignsuite`) that loads the full site **https://training.harnessengineering.com** in a mobile WebView.
+2. Placeholder HTML (`index.html`) pointing at related calculator artifacts.
 
-1. Download `index.html`
-2. Open it in any modern browser (Chrome, Edge, Firefox)
-3. No server required – fully self-contained
+## Android app (primary deliverable)
 
-## Live preview
+See [`android/README.md`](android/README.md) for build and test instructions.
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+## Site content
+
+The training / shop / suite website is hosted separately (WordPress) at https://training.harnessengineering.com and is **not** source-controlled in this repo. Mobile CSS/layout for the site must be changed on that host (or its theme), not here.
+
+## Live HTML preview
 
 After enabling **GitHub Pages**:
-- Go to repo Settings → Pages → Source = Deploy from a branch → main / root → Save
-- Then open: https://nainglinkyawep.github.io/harness-solar-calculator/
 
-Or use HTML preview service:
-https://htmlpreview.github.io/?https://github.com/nainglinkyawep/harness-solar-calculator/blob/main/index.html
+- Settings → Pages → Source = Deploy from a branch → main / root
+- https://nainglinkyawep.github.io/harness-solar-calculator/
